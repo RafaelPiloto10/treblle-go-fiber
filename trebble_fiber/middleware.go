@@ -28,13 +28,12 @@ func Middleware() func(*fiber.Ctx) error {
 		// after this finishes, we have the response recorded
 
 		// copy the original headers
-		for k, vs := range rec.Header() {
-			for _, v := range vs {
-				rec.Header().Add(k, v)
-			}
-		}
+		r.Context().Response.Header.VisitAll(func(key []byte, value []byte) {
+			rec.Header().Add(string(key), string(value))
+		})
 
 		rec.Body.Write(r.Context().Response.Body())
+		rec.Code = r.Context().Response.StatusCode()
 
 		if !errors.Is(errReqInfo, ErrNotJson) {
 			responseInfo := getFiberResponseInfo(rec, startTime)

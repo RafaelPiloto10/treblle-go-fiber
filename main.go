@@ -2,19 +2,23 @@ package main
 
 import (
 	"fmt"
+	"os"
 
-	treblle_fiber "github.com/RafaelPiloto10/treblle-go-fiber/trebble_fiber"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/joho/godotenv"
+
+	treblle_fiber "github.com/RafaelPiloto10/treblle-go-fiber/trebble_fiber"
 )
 
 func main() {
 	// Define a new Fiber app with config.
 	app := fiber.New(fiber.Config{})
+	godotenv.Load()
 
 	treblle_fiber.Configure(treblle_fiber.Configuration{
-		APIKey:    "",
-		ProjectID: "",
+		APIKey:    os.Getenv("API_KEY"),
+		ProjectID: os.Getenv("PROJECT_ID"),
 	})
 
 	app.Use(logger.New(), treblle_fiber.Middleware())
@@ -39,7 +43,7 @@ func Ping(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map {
+	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map {
 		"error": false,
 		"msg": fmt.Sprintf("Pinged %v\n", body.count),
 	})
