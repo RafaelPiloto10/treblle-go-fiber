@@ -42,9 +42,12 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 		Headers:   headers,
 	}
 
-	if r.Body() != nil && len(r.Body()) > 0 {
+	requestBody := []byte{}
+	copy(requestBody, r.Context().Request.Body())
+
+	if requestBody != nil && len(requestBody) > 0 {
 		buf := new(bytes.Buffer)
-		buf.Write(r.Context().Request.Body())
+		buf.Write(requestBody)
 		buf_bytes := buf.Bytes()
 
 		// open 2 NopClosers over the buffer to allow buffer to be read and still passed on
