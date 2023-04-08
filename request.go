@@ -1,4 +1,4 @@
-package treblle
+package treblle_fiber
 
 import (
 	"bytes"
@@ -6,9 +6,10 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"regexp"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type RequestInfo struct {
@@ -24,28 +25,26 @@ type RequestInfo struct {
 var ErrNotJson = errors.New("request body is not JSON")
 
 // Get details about the request
-func getRequestInfo(r *http.Request, startTime time.Time) (RequestInfo, error) {
+func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 	defer dontPanic()
 
 	headers := make(map[string]string)
-	for k := range r.Header {
-		headers[k] = r.Header.Get(k)
+	for k := range r.GetReqHeaders() {
+		headers[k] = r.GetReqHeaders()[k]
 	}
 
 	ri := RequestInfo{
 		Timestamp: startTime.Format("2006-01-02 15:04:05"),
-		Ip:        r.RemoteAddr,
-		Url:       r.RequestURI,
-		UserAgent: r.UserAgent(),
-		Method:    r.Method,
+		Ip:        r.Context().RemoteAddr().String(),
+		Url:       r.Context().URI().String(),
+		UserAgent: string(r.Context().UserAgent()),
+		Method:    string(r.Context().Method()),
 		Headers:   headers,
 	}
 
-	if r.Body != nil && r.Body != http.NoBody {
-		buf, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			return ri, err
-		}
+	if r.Body() != nil {
+		buf := []byte{}
+		copy(r.Body(), buf) 
 		// open 2 NopClosers over the buffer to allow buffer to be read and still passed on
 		bodyReaderOriginal := ioutil.NopCloser(bytes.NewBuffer(buf))
 		// restore the original request body once done processing
@@ -67,8 +66,10 @@ func getRequestInfo(r *http.Request, startTime time.Time) (RequestInfo, error) {
 	return ri, nil
 }
 
-func recoverBody(r *http.Request, bodyReaderCopy io.ReadCloser) {
-	r.Body = bodyReaderCopy
+func recoverBody(r *fiber.Ctx, bodyReaderCopy io.ReadCloser) {
+	buf := []byte{}
+	bodyReaderCopy.Read(buf)
+	r.Context().Request.SetBody(buf)
 }
 
 func getMaskedJSON(body []byte) (map[string]interface{}, error) {

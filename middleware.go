@@ -1,11 +1,12 @@
-package treblle
+package treblle_fiber
 
 import (
 	"errors"
 	"log"
-	"net/http"
 	"net/http/httptest"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 const (
@@ -13,8 +14,8 @@ const (
 	sdkName        = "go"
 )
 
-func Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Middleware() func(*fiber.Ctx) {
+	return func(r *fiber.Ctx) {
 		startTime := time.Now()
 
 		requestInfo, errReqInfo := getRequestInfo(r, startTime)
@@ -23,21 +24,14 @@ func Middleware(next http.Handler) http.Handler {
 		rec := httptest.NewRecorder()
 
 		// do the actual request as intended
-		next.ServeHTTP(rec, r)
+		r.Next()
 		// after this finishes, we have the response recorded
 
 		// copy the original headers
-		for k, v := range rec.Header() {
-			w.Header()[k] = v
-		}
-
-		// copy the original code
-		w.WriteHeader(rec.Code)
-
-		// write the original body
-		_, err := w.Write(rec.Body.Bytes())
-		if err != nil {
-			return
+		for k, vs := range rec.Header() {
+			for _, v := range vs {
+				r.Context().Response.Header.Add(k, v)
+			}
 		}
 
 		if !errors.Is(errReqInfo, ErrNotJson) {
@@ -56,7 +50,7 @@ func Middleware(next http.Handler) http.Handler {
 			// don't block execution while sending data to Treblle
 			go sendToTreblle(ti)
 		}
-	})
+	}
 }
 
 // If anything happens to go wrong inside one of treblle-go internals, recover from panic and continue

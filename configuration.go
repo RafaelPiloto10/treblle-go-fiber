@@ -1,4 +1,4 @@
-package treblle
+package treblle_fiber
 
 var Config internalConfiguration
 
