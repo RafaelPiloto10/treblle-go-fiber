@@ -1,4 +1,4 @@
-module github.com/RafaelPiloto10/treblle-fiber-go
+module github.com/RafaelPiloto10/treblle-go-fiber
 
 go 1.14
 
