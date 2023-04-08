@@ -2,7 +2,6 @@ package treblle_fiber
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http/httptest"
 	"time"
@@ -20,9 +19,6 @@ func Middleware() func(*fiber.Ctx) error {
 		startTime := time.Now()
 
 		requestInfo, errReqInfo := getRequestInfo(r, startTime)
-		if errReqInfo != nil {
-			fmt.Printf("got error getting request: %v\n", errReqInfo)
-		}
 
 		// intercept the response so it can be copied
 		rec := httptest.NewRecorder()
@@ -42,7 +38,6 @@ func Middleware() func(*fiber.Ctx) error {
 
 		if !errors.Is(errReqInfo, ErrNotJson) {
 			responseInfo := getFiberResponseInfo(rec, startTime)
-			fmt.Printf("sent request; %v; %v; %v; %v\n", requestInfo.Ip, requestInfo.Url, requestInfo.Method, responseInfo)
 
 			ti := MetaData{
 				ApiKey:    Config.APIKey,

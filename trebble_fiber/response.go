@@ -2,7 +2,6 @@ package treblle_fiber
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http/httptest"
 	"time"
 )
@@ -50,11 +49,9 @@ func getFiberResponseInfo(response *httptest.ResponseRecorder, startTime time.Ti
 	}
 
 	if err != nil {
-		fmt.Printf("got error unmarshalling response; %v\n", err)
 		errInfo.Message = err.Error()
 		r.Errors = append(r.Errors, errInfo)
 	}
 
-	fmt.Printf("responseInfo: %v\n", r)
 	return r
 }

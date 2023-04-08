@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"regexp"
@@ -42,8 +41,6 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 		Method:    string(r.Context().Method()),
 		Headers:   headers,
 	}
-
-	fmt.Printf("got request: %v; %v\n", ri.Url, ri.Method)
 
 	if r.Body() != nil && len(r.Body()) > 0 {
 		buf := new(bytes.Buffer)
