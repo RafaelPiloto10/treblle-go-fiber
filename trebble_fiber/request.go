@@ -44,10 +44,12 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 
 	if r.Body() != nil && len(r.Body()) > 0 {
 		buf := new(bytes.Buffer)
-		r.Request().BodyWriteTo(buf)
+		buf.Write(r.Context().Request.Body())
 		buf_bytes := buf.Bytes()
+
 		// open 2 NopClosers over the buffer to allow buffer to be read and still passed on
 		bodyReaderOriginal := ioutil.NopCloser(bytes.NewBuffer(buf_bytes))
+
 		// restore the original request body once done processing
 		defer recoverBody(r, ioutil.NopCloser(bytes.NewBuffer(buf_bytes)))
 
