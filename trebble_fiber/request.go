@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"regexp"
@@ -42,13 +43,16 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 		Headers:   headers,
 	}
 
-	if r.Body() != nil {
-		buf := []byte{}
-		copy(r.Body(), buf) 
+	fmt.Printf("got request: %v; %v\n", ri.Url, ri.Method)
+
+	if r.Body() != nil && len(r.Body()) > 0 {
+		buf := new(bytes.Buffer)
+		r.Request().BodyWriteTo(buf)
+		buf_bytes := buf.Bytes()
 		// open 2 NopClosers over the buffer to allow buffer to be read and still passed on
-		bodyReaderOriginal := ioutil.NopCloser(bytes.NewBuffer(buf))
+		bodyReaderOriginal := ioutil.NopCloser(bytes.NewBuffer(buf_bytes))
 		// restore the original request body once done processing
-		defer recoverBody(r, ioutil.NopCloser(bytes.NewBuffer(buf)))
+		defer recoverBody(r, ioutil.NopCloser(bytes.NewBuffer(buf_bytes)))
 
 		body, err := ioutil.ReadAll(bodyReaderOriginal)
 		if err != nil {
@@ -63,6 +67,7 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 
 		ri.Body = sanitizedJsonString
 	}
+
 	return ri, nil
 }
 

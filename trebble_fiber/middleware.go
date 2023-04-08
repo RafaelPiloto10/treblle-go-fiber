@@ -2,6 +2,7 @@ package treblle_fiber
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http/httptest"
 	"time"
@@ -14,11 +15,14 @@ const (
 	sdkName        = "go"
 )
 
-func Middleware() func(*fiber.Ctx) {
-	return func(r *fiber.Ctx) {
+func Middleware() func(*fiber.Ctx) error {
+	return func(r *fiber.Ctx) error {
 		startTime := time.Now()
 
 		requestInfo, errReqInfo := getRequestInfo(r, startTime)
+		if errReqInfo != nil {
+			fmt.Printf("got error getting request: %v\n", errReqInfo)
+		}
 
 		// intercept the response so it can be copied
 		rec := httptest.NewRecorder()
@@ -30,11 +34,16 @@ func Middleware() func(*fiber.Ctx) {
 		// copy the original headers
 		for k, vs := range rec.Header() {
 			for _, v := range vs {
-				r.Context().Response.Header.Add(k, v)
+				rec.Header().Add(k, v)
 			}
 		}
 
+		rec.Body.Write(r.Context().Response.Body())
+
 		if !errors.Is(errReqInfo, ErrNotJson) {
+			responseInfo := getFiberResponseInfo(rec, startTime)
+			fmt.Printf("sent request; %v; %v; %v; %v\n", requestInfo.Ip, requestInfo.Url, requestInfo.Method, responseInfo)
+
 			ti := MetaData{
 				ApiKey:    Config.APIKey,
 				ProjectID: Config.ProjectID,
@@ -44,12 +53,14 @@ func Middleware() func(*fiber.Ctx) {
 					Server:   Config.serverInfo,
 					Language: Config.languageInfo,
 					Request:  requestInfo,
-					Response: getResponseInfo(rec, startTime),
+					Response: responseInfo,
 				},
 			}
 			// don't block execution while sending data to Treblle
 			go sendToTreblle(ti)
 		}
+
+		return nil
 	}
 }
 

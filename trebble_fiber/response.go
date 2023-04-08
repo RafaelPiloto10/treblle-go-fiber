@@ -2,6 +2,7 @@ package treblle_fiber
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http/httptest"
 	"time"
 )
@@ -24,28 +25,36 @@ type ErrorInfo struct {
 }
 
 // Extract information from the response recorder
-func getResponseInfo(response *httptest.ResponseRecorder, startTime time.Time) ResponseInfo {
+func getFiberResponseInfo(response *httptest.ResponseRecorder, startTime time.Time) ResponseInfo {
 	defer dontPanic()
 	responseBytes := response.Body.Bytes()
 
 	errInfo := ErrorInfo{}
 	var body map[string]interface{}
+
+	// handle error down below
 	err := json.Unmarshal(responseBytes, &body)
-	if err != nil {
-		errInfo.Message = err.Error()
-	}
 
 	headers := make(map[string]string)
 	for k := range response.Header() {
 		headers[k] = response.Header().Get(k)
 	}
 
-	return ResponseInfo{
+	r := ResponseInfo{
 		Headers:  headers,
 		Code:     response.Code,
 		Size:     len(responseBytes),
 		LoadTime: float64(time.Since(startTime).Microseconds()),
 		Body:     body,
-		Errors:   []ErrorInfo{errInfo},
+		Errors:   make([]ErrorInfo, 0),
 	}
+
+	if err != nil {
+		fmt.Printf("got error unmarshalling response; %v\n", err)
+		errInfo.Message = err.Error()
+		r.Errors = append(r.Errors, errInfo)
+	}
+
+	fmt.Printf("responseInfo: %v\n", r)
+	return r
 }
