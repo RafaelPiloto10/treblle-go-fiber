@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"regexp"
@@ -42,7 +43,7 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 		Headers:   headers,
 	}
 
-	requestBody := []byte{}
+	requestBody := make([]byte, len(r.Context().Request.Body()))
 	copy(requestBody, r.Context().Request.Body())
 
 	if requestBody != nil && len(requestBody) > 0 {
@@ -52,9 +53,6 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 
 		// open 2 NopClosers over the buffer to allow buffer to be read and still passed on
 		bodyReaderOriginal := ioutil.NopCloser(bytes.NewBuffer(buf_bytes))
-
-		// restore the original request body once done processing
-		defer recoverBody(r, ioutil.NopCloser(bytes.NewBuffer(buf_bytes)))
 
 		body, err := ioutil.ReadAll(bodyReaderOriginal)
 		if err != nil {
@@ -103,7 +101,7 @@ func copyAndMaskJson(src map[string]interface{}, dest map[string]interface{}) {
 			_, exists := Config.KeysMap[key]
 			if exists {
 				re := regexp.MustCompile(".")
-				maskedValue := re.ReplaceAllString(value.(string), "*")
+				maskedValue := re.ReplaceAllString(fmt.Sprintf("%v", value), "*")
 				dest[key] = maskedValue
 			} else {
 				dest[key] = value

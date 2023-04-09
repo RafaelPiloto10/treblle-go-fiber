@@ -19,7 +19,7 @@ func main() {
 	treblle_fiber.Configure(treblle_fiber.Configuration{
 		APIKey:    os.Getenv("API_KEY"),
 		ProjectID: os.Getenv("PROJECT_ID"),
-		KeysToMask: []string{"msg"},
+		KeysToMask: []string{"count"},
 	})
 
 	app.Use(logger.New(), treblle_fiber.Middleware())
@@ -30,7 +30,7 @@ func main() {
 }
 
 type PingRequest struct {
-	count int8
+	Count int32 `json:"count"`
 }
 
 func Ping(c *fiber.Ctx) error {
@@ -44,8 +44,10 @@ func Ping(c *fiber.Ctx) error {
 		})
 	}
 
+	fmt.Printf("body: %v\n", body)
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map {
 		"error": false,
-		"msg": fmt.Sprintf("Pinged %v\n", body.count),
+		"msg": fmt.Sprintf("Pinged %v", body.Count),
 	})
 }
