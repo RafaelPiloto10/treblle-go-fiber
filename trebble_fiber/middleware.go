@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http/httptest"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,6 +17,20 @@ const (
 
 func Middleware() func(*fiber.Ctx) error {
 	return func(r *fiber.Ctx) error {
+		for  _, route := range Config.IgnoreExact {
+			if route == string(r.Context().URI().RequestURI()) {
+				r.Next()
+				return nil
+			}
+		}
+
+		for _, route := range Config.IgnorePrefix {
+			if strings.HasPrefix(string(r.Context().URI().RequestURI()), route) {
+				r.Next()
+				return nil
+			}
+		}
+
 		startTime := time.Now()
 
 		requestInfo, errReqInfo := getRequestInfo(r, startTime)

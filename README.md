@@ -28,6 +28,8 @@ func main() {
 		ProjectID:  "YOUR PROJECT ID HERE",
 		KeysToMask: []string{"password", "card_number"}, // optional, mask fields you don't want sent to Treblle
 		ServerURL:  "https://rocknrolla.treblle.com",    // optional, don't use default server URL
+		IgnorePrefix: []string{"/pi"}, // optional, ignore routes that start with these prefixes
+		IgnoreExact: []string{"/ping"}, // optional, ignore routes that match exactly
 	}
 
     // rest of your program.

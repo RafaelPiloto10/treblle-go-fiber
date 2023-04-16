@@ -9,6 +9,8 @@ type Configuration struct {
 	APIKey     string
 	ProjectID  string
 	KeysToMask []string
+	IgnoreExact []string
+	IgnorePrefix []string
 	ServerURL  string
 }
 
@@ -42,6 +44,8 @@ func Configure(config Configuration) {
 		}
 	}
 
+	Config.IgnoreExact = config.IgnoreExact
+	Config.IgnorePrefix = config.IgnorePrefix
 	Config.serverInfo = getServerInfo()
 	Config.languageInfo = getLanguageInfo()
 }

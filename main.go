@@ -20,10 +20,11 @@ func main() {
 		APIKey:    os.Getenv("API_KEY"),
 		ProjectID: os.Getenv("PROJECT_ID"),
 		KeysToMask: []string{"count"},
+		IgnorePrefix: []string{"/pi"},
 	})
 
 	app.Use(logger.New(), treblle_fiber.Middleware())
-	app.Add("POST", "/ping", Ping)
+	app.Add("POST", "/ping/:id", Ping)
 
 	// Start server (with or without graceful shutdown).
 	app.Listen("localhost:3000")
@@ -43,8 +44,6 @@ func Ping(c *fiber.Ctx) error {
 			"msg":   err.Error(),
 		})
 	}
-
-	fmt.Printf("body: %v\n", body)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map {
 		"error": false,
