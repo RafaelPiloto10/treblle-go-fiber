@@ -39,7 +39,7 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 	if string(r.Request().Header.Peek("X-Forwarded-Proto")) == "https" || r.Context().TLSConnectionState() != nil {
 		protocol = "https"
 	}
-	fullURL := protocol + "://" + r.Hostname() + r.Request().URI().String()
+	fullURL := protocol + "://" + r.Hostname() + r.Context().URI().String()
 	ip := extractIP(r.Context().RemoteAddr().String())
 
 	body, err := json.Marshal(headers)
