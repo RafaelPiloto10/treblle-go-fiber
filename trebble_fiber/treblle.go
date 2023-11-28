@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	timeoutDuration = 2 * time.Second
+	timeoutDuration = 5 * time.Second
 )
 
 type BaseUrlOptions struct {
