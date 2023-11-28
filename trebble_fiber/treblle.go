@@ -58,11 +58,7 @@ func sendToTreblle(treblleInfo MetaData) {
 		fmt.Printf("failed to post: %+v\n", err)
 	} else {
 		if response.StatusCode >= http.StatusBadRequest {
-			bytes := []byte{}
-			if _, err = response.Body.Read(bytes); err != nil {
-				fmt.Printf("failed to post: %+v\n", err)
-			}
-			fmt.Printf("failed to post: %+v\n", string(bytes))
+			fmt.Printf("failed to post with status code >= 400: %+v\n", response)
 		}
 	}
 }

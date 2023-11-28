@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net"
 	"regexp"
 	"strings"
@@ -35,11 +34,6 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 		headers[k] = r.GetReqHeaders()[k]
 	}
 
-	protocol := "http"
-	if string(r.Request().Header.Peek("X-Forwarded-Proto")) == "https" || r.Context().TLSConnectionState() != nil {
-		protocol = "https"
-	}
-	fullURL := protocol + "://" + r.Hostname() + r.Context().URI().String()
 	ip := extractIP(r.Context().RemoteAddr().String())
 
 	body, err := json.Marshal(headers)
@@ -50,7 +44,7 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 	ri := RequestInfo{
 		Timestamp: startTime.Format("2006-01-02 15:04:05"),
 		Ip:        ip,
-		Url:       fullURL,
+		Url:       r.Context().URI().String(),
 		UserAgent: string(r.Request().Header.UserAgent()),
 		Method:    string(r.Request().Header.Method()),
 		Headers:   body,
@@ -65,9 +59,9 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 		buf_bytes := buf.Bytes()
 
 		// open 2 NopClosers over the buffer to allow buffer to be read and still passed on
-		bodyReaderOriginal := ioutil.NopCloser(bytes.NewBuffer(buf_bytes))
+		bodyReaderOriginal := io.NopCloser(bytes.NewBuffer(buf_bytes))
 
-		body, err := ioutil.ReadAll(bodyReaderOriginal)
+		body, err := io.ReadAll(bodyReaderOriginal)
 		if err != nil {
 			return ri, err
 		}
