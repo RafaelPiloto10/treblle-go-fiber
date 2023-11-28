@@ -13,6 +13,8 @@ The offical Trebble SDK for Go using Fiber
 go get github.com/RafaelPiloto10/treblle-go-fiber/trebble_fiber@latest
 ```
 
+## Basic configuration
+
 Configure Treblle at the start of your `main()` function:
 
 ```go

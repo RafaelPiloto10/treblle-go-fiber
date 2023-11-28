@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	treblleVersion = 0.6
+	treblleVersion = "0.7.2"
 	sdkName        = "go"
 )
 
