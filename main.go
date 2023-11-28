@@ -19,7 +19,7 @@ func main() {
 	treblle_fiber.Configure(treblle_fiber.Configuration{
 		APIKey:    os.Getenv("API_KEY"),
 		ProjectID: os.Getenv("PROJECT_ID"),
-		KeysToMask: []string{"count"},
+		AdditionalFieldsToMask: []string{"count"},
 		IgnorePrefix: []string{"/pi"},
 	})
 

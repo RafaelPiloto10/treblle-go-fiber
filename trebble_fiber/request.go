@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
-	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -38,19 +36,24 @@ func getRequestInfo(r *fiber.Ctx, startTime time.Time) (RequestInfo, error) {
 	}
 
 	protocol := "http"
-	if r.Header.Get("X-Forwarded-Proto") == "https" || r.TLS != nil {
+	if string(r.Request().Header.Peek("X-Forwarded-Proto")) == "https" || r.Context().TLSConnectionState() != nil {
 		protocol = "https"
 	}
-	fullURL := protocol + "://" + r.Host + r.URL.RequestURI()
-	ip := extractIP(r.RemoteAddr)
+	fullURL := protocol + "://" + r.Hostname() + r.Request().URI().String()
+	ip := extractIP(r.Context().RemoteAddr().String())
+
+	body, err := json.Marshal(headers)
+	if err != nil {
+		return RequestInfo{}, err
+	}
 
 	ri := RequestInfo{
 		Timestamp: startTime.Format("2006-01-02 15:04:05"),
 		Ip:        ip,
 		Url:       fullURL,
-		UserAgent: r.UserAgent(),
-		Method:    r.Method,
-		Headers:   headers,
+		UserAgent: string(r.Request().Header.UserAgent()),
+		Method:    string(r.Request().Header.Method()),
+		Headers:   body,
 	}
 
 	requestBody := make([]byte, len(r.Context().Request.Body()))
