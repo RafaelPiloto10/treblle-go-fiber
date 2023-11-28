@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 )
@@ -12,14 +13,37 @@ const (
 	timeoutDuration = 2 * time.Second
 )
 
+type BaseUrlOptions struct {
+	Debug bool
+}
+
+func getTreblleBaseUrl() string {
+	if Config.Debug {
+		return "https://debug.treblle.com/"
+	}
+
+	treblleBaseUrls := []string{
+		"https://rocknrolla.treblle.com",
+		"https://punisher.treblle.com",
+		"https://sicario.treblle.com",
+	}
+
+	rand.Seed(time.Now().Unix())
+	randomUrlIndex := rand.Intn(len(treblleBaseUrls))
+
+	return treblleBaseUrls[randomUrlIndex]
+}
+
 func sendToTreblle(treblleInfo MetaData) {
+	baseUrl := getTreblleBaseUrl()
+
 	bytesRepresentation, err := json.Marshal(treblleInfo)
 	if err != nil {
 		fmt.Printf("failed to marshall treblle information: %+v\n", err)
 		return
 	}
 
-	req, err := http.NewRequest(http.MethodPost, Config.ServerURL, bytes.NewBuffer(bytesRepresentation))
+	req, err := http.NewRequest(http.MethodPost, baseUrl, bytes.NewBuffer(bytesRepresentation))
 	if err != nil {
 		fmt.Printf("failed to create HTTP Post request: %+v\n", err)
 		return
