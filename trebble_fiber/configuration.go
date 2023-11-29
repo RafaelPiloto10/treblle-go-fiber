@@ -32,6 +32,7 @@ func Configure(config Configuration) {
 		Config.AdditionalFieldsToMask = config.AdditionalFieldsToMask
 	}
 
+	Config.ServerURL = config.ServerURL
 	Config.IgnoreExact = config.IgnoreExact
 	Config.IgnorePrefix = config.IgnorePrefix
 	Config.FieldsMap = generateFieldsToMask(Config.AdditionalFieldsToMask)

@@ -47,7 +47,6 @@ func sendToTreblle(treblleInfo MetaData) {
 		return
 	}
 
-	fmt.Printf("logging request to Treblle: %v", baseUrl)
 	req, err := http.NewRequest(http.MethodPost, baseUrl, bytes.NewBuffer(bytesRepresentation))
 	if err != nil {
 		fmt.Printf("failed to create HTTP Post request: %+v\n", err)
