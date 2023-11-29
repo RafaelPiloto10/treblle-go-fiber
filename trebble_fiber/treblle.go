@@ -22,6 +22,10 @@ func getTreblleBaseUrl() string {
 		return "https://debug.treblle.com/"
 	}
 
+	if Config.ServerURL != "" {
+		return Config.ServerURL
+	}
+
 	treblleBaseUrls := []string{
 		"https://rocknrolla.treblle.com",
 		"https://punisher.treblle.com",
